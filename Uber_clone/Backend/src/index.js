@@ -4,7 +4,7 @@ const express = require('express');
 const app = express();
 
 // mongoose connection
-const {connectDB} = require('./db/connect');
+const {connectDB} = require("./DB/connect");
 
 // Add process environment variables
 connectDB("mongodb+srv://rajmane_84:wry1wiFuqjNd47R0@test01.hc73h.mongodb.net/uber_clone");
@@ -30,7 +30,6 @@ const userRoute = require('./routes/user.route');
 // Routes
 app.use('/user', userRoute);
 
-// Add process environment variables
-app.listen(8000, () => {
+app.listen(process.env.PORT || 8000, () => {
     console.log("Server is running on port 8000");
 })

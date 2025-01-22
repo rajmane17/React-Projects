@@ -1,5 +1,6 @@
 const User = require('../models/user.model');
 const { validationResult } = require('express-validator');
+const blacklistToken = require('../models/blacklistToken.model');
 
 const handleUserSignup = async (req, res) => {
 
@@ -50,47 +51,87 @@ const handleUserSignup = async (req, res) => {
 
 const handleUserLogin = async (req, res) => {
 
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const { email, password } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({ msg: "Both email and password are required" });
+        }
+
+        const getUser = await User.findOne({ email }).select('+password');
+
+        if (!getUser) {
+            return res.status(400).json({ msg: "User does not exist" });
+        }
+
+        const isMatch = await getUser.comparePassword(password);
+
+        if (!isMatch) {
+            return res.status(400).json({ msg: "Invalid password" });
+        }
+
+        const options = {
+            // by default our cookies can be modified by anyone, but enabling these option restricts that.
+            httpOlnly: true,
+            secure: true,
+        }
+
+        const token = getUser.generateAccessToken();
+
+        getUser.password = undefined;
+
+        return res.status(200)
+            .cookie('token', token, options)
+            .json({
+                msg: "Logged in successfully",
+                token: token,
+                user: getUser
+            });
     }
-
-    const {email, password} = req.body;
-
-    if( !email || !password){
-        return res.status(400).json({ msg: "Both email and password are required" });
+    catch (error) {
+        console.error(error.message);
+        res.status(500).send('Server error');
     }
+}
 
-    const getUser = await User.findOne({ email }).select('+password');
+const handleGetUserProfile = async (req, res) => {
+    return res.status(200).json({ user: req.user });
+}
 
-    if(!getUser){
-        return res.status(400).json({ msg: "User does not exist" });
+const handleUserLogout = async (req, res) => {
+    try {
+        const token = req.cookies?.token || req.header("Authorization")?.replace("Bearer ", "");
+    
+        // adding the token to the blacklist
+        await blacklistToken.create({ token });
+        const isBlacklisted = await blacklistToken.findOne({ token });
+    
+        if (isBlacklisted) {
+            return res.status(401).json({ msg: "You have been logged out" });
+        }
+    
+        const options = {
+            // by default our cookies can be modified by anyone, but enabling these option restricts that.
+            httpOlnly: true,
+            secure: true,
+        }
+    
+        res.status(200).clearCookie("token", options).json({ msg: "Logged out successfully" });
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).send("Server error");
+        
     }
-
-    const isMatch = await getUser.comparePassword(password);
-
-    if(!isMatch){
-        return res.status(400).json({ msg: "Invalid password" });
-    }
-
-    const options = {
-    // by default our cookies can be modified by anyone, but enabling these option restricts that.
-    httpOlnly: true,
-    secure: true,
-   }
-
-   const token = getUser.generateAccessToken();
-
-   return res.status(200)
-        .cookie('token', token, options)
-        .json({ 
-            msg: "Logged in successfully",
-            token: token,
-            user: getUser
-         });
 }
 
 module.exports = {
     handleUserSignup,
-    handleUserLogin
+    handleUserLogin,
+    handleGetUserProfile,
+    handleUserLogout
 }
