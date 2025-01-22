@@ -48,6 +48,49 @@ const handleUserSignup = async (req, res) => {
     }
 };
 
+const handleUserLogin = async (req, res) => {
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const {email, password} = req.body;
+
+    if( !email || !password){
+        return res.status(400).json({ msg: "Both email and password are required" });
+    }
+
+    const getUser = await User.findOne({ email }).select('+password');
+
+    if(!getUser){
+        return res.status(400).json({ msg: "User does not exist" });
+    }
+
+    const isMatch = await getUser.comparePassword(password);
+
+    if(!isMatch){
+        return res.status(400).json({ msg: "Invalid password" });
+    }
+
+    const options = {
+    // by default our cookies can be modified by anyone, but enabling these option restricts that.
+    httpOlnly: true,
+    secure: true,
+   }
+
+   const token = getUser.generateAccessToken();
+
+   return res.status(200)
+        .cookie('token', token, options)
+        .json({ 
+            msg: "Logged in successfully",
+            token: token,
+            user: getUser
+         });
+}
+
 module.exports = {
-    handleUserSignup
-};
+    handleUserSignup,
+    handleUserLogin
+}
