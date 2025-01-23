@@ -6,8 +6,7 @@ const app = express();
 // mongoose connection
 const {connectDB} = require("./DB/connect");
 
-// Add process environment variables
-connectDB("mongodb+srv://rajmane_84:wry1wiFuqjNd47R0@test01.hc73h.mongodb.net/uber_clone");
+connectDB(`${process.env.MONGO_URI}`);
 
 // Middleware Imports
 const cors = require('cors');

@@ -8,7 +8,7 @@ function UserLogout() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get(`http://localhost:8000/user/logout`, {
+    axios.get(`${import.meta.env.VITE_BASE_URL}/user/logout`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
