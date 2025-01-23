@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { Routes, Route } from 'react-router-dom'
-import { Home, Start, UserLogin, UserSignup, CaptionSignup, CaptionLogin } from "./pages/index.js"
+import { Home, Start, UserLogin, UserSignup, CaptionSignup, CaptionLogin, UserProtectedWrapper, UserLogout } from "./pages/index.js"
 import { useContext } from 'react'
 import { userDataContext } from './context/UserContext'
 function App() {
@@ -15,7 +15,12 @@ function App() {
       <Route path='/signup' element={<UserSignup />}/>
       <Route path='/caption-login' element={<CaptionLogin />}/>
       <Route path='/caption-signup' element={<CaptionSignup />}/>
-      <Route path='/home' element={<Home />}/>
+      <Route path='/home' element={
+        <UserProtectedWrapper>
+        <Home />
+        </UserProtectedWrapper>
+      }/>
+      <Route path='/logout' element={<UserLogout />}/>
     </Routes>
     </>
   )

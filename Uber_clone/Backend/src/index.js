@@ -26,9 +26,11 @@ app.use(cors());
 
 // Route imports
 const userRoute = require('./routes/user.route');
+const captainRoute = require('./routes/captain.route');
 
 // Routes
 app.use('/user', userRoute);
+app.use('/captain', captainRoute);
 
 app.listen(process.env.PORT || 8000, () => {
     console.log("Server is running on port 8000");

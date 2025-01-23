@@ -102,32 +102,31 @@ const handleUserLogin = async (req, res) => {
 const handleGetUserProfile = async (req, res) => {
     return res.status(200).json({ user: req.user });
 }
-
 const handleUserLogout = async (req, res) => {
     try {
         const token = req.cookies?.token || req.header("Authorization")?.replace("Bearer ", "");
-    
+
+        if (!token) {
+            return res.status(400).json({ msg: "No token provided" });
+        }
+
         // adding the token to the blacklist
         await blacklistToken.create({ token });
         const isBlacklisted = await blacklistToken.findOne({ token });
-    
+
         if (isBlacklisted) {
-            return res.status(401).json({ msg: "You have been logged out" });
+            const options = {
+                httpOnly: true,
+                secure: true,
+            };
+            return res.status(200).clearCookie("token", options).json({ msg: "Logged out successfully" });
         }
-    
-        const options = {
-            // by default our cookies can be modified by anyone, but enabling these option restricts that.
-            httpOlnly: true,
-            secure: true,
-        }
-    
-        res.status(200).clearCookie("token", options).json({ msg: "Logged out successfully" });
+
+        return res.status(500).json({ msg: "Failed to logout" });
     } catch (error) {
-        console.error(error.message);
-        res.status(500).send("Server error");
-        
+        return res.status(500).json({ msg: "Server error" });
     }
-}
+};
 
 module.exports = {
     handleUserSignup,
