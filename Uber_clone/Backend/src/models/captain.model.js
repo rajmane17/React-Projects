@@ -33,7 +33,7 @@ const captainSchema = new mongoose.Schema({
     },
     status:{
         type: String,
-        default: ["inactive", "Captain is not available"],
+        default: "inactive",
         enum: ['active', 'inactive'],
     },
     vehicle:{
@@ -62,11 +62,9 @@ const captainSchema = new mongoose.Schema({
     location:{
         latitude:{
             type: Number,
-            required: true,
         },
         longitude:{
             type: Number,
-            required: true,
         }
     }
 }, {timestamps: true});
