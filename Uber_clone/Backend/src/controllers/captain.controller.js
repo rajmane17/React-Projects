@@ -1,4 +1,5 @@
 const Captain = require("../models/captain.model.js")
+const blacklistToken = require('../models/blacklistToken.model');
 const { validationResult } = require('express-validator');
 
 async function handleCaptainSignup(req, res) {
@@ -16,7 +17,7 @@ async function handleCaptainSignup(req, res) {
 
     const existingCaptain = await Captain.findOne({ email });
 
-    if(existingCaptain){
+    if (existingCaptain) {
         return res.status(400).json({ error: "Captain already exists" });
     }
 
@@ -42,9 +43,9 @@ async function handleCaptainSignup(req, res) {
     const captainToken = newCaptain.generateAccessToken();
 
     return res
-    .status(201)
-    .cookie('captainToken', captainToken)
-    .json({ captainToken: captainToken, captain: newCaptain });
+        .status(201)
+        .cookie('captainToken', captainToken)
+        .json({ captainToken: captainToken, captain: newCaptain });
 
 }
 
@@ -62,14 +63,14 @@ async function handleCaptainLogin(req, res) {
     }
 
     const existingCaptain = await Captain.findOne({ email }).select('+password');
-    
-    if(!existingCaptain){
+
+    if (!existingCaptain) {
         return res.status(400).json({ error: "Captain does not exist" });
     }
 
     const isPasswordCorrect = await existingCaptain.comparePassword(password);
 
-    if(!isPasswordCorrect){
+    if (!isPasswordCorrect) {
         return res.status(400).json({ error: "Incorrect password" });
     }
 
@@ -77,12 +78,48 @@ async function handleCaptainLogin(req, res) {
     existingCaptain.password = undefined;
 
     return res
-    .status(200)
-    .cookie('captainToken', captainToken)
-    .json({ captainToken: captainToken, captain: existingCaptain });
+        .status(200)
+        .cookie('captainToken', captainToken)
+        .json({ captainToken: captainToken, captain: existingCaptain });
+}
+
+async function handleCaptainLogout(req, res) {
+
+try {
+        const captainToken = req.cookies.captainToken || req.headers.authorization.split(' ')[1];
+    
+        if (!captainToken) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+        await blacklistToken.create({ token: captainToken });
+        const isBlacklisted = await blacklistToken.findOne({ token: captainToken });
+    
+        if (!isBlacklisted) {
+            return res.status(500).json({ error: "Could not blacklist token" });
+        }
+    
+        const options = {
+            httpOnly: true,
+            secure: true,
+        };
+    
+        return res
+            .status(200)
+            .clearCookie('captainToken', options)
+            .json({ msg: "Logged out successfully" });
+} catch (error) {
+    console.log(error.message);
+}
+
+}
+
+async function handleGetCaptainProfile(req, res) {
+    return res.status(200).json({ captain: req.captain });
 }
 
 module.exports = {
     handleCaptainSignup,
-    handleCaptainLogin
+    handleCaptainLogin,
+    handleCaptainLogout,
+    handleGetCaptainProfile
 }

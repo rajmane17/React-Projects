@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { handleCaptainSignup, handleCaptainLogin } = require('../controllers/captain.controller')
+const { handleCaptainSignup, handleCaptainLogin, handleCaptainLogout, handleGetCaptainProfile } = require('../controllers/captain.controller')
 const {body} = require('express-validator');
+const checkCaptainAuth = require('../middleware/authCaptain.middleware');
 
 router.post("/signup", [
     body('fullName.firstName').isLength({ min: 3 }).withMessage('First name must be at least 3 characters long'),
@@ -18,5 +19,9 @@ router.post("/login", [
     body('email').isEmail().withMessage('Please enter a valid email address'),
     body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters long')
 ], handleCaptainLogin)
+
+router.get("/logout", checkCaptainAuth, handleCaptainLogout)
+
+router.get("/captain-profile", checkCaptainAuth, handleGetCaptainProfile)
 
 module.exports = router;
