@@ -102,7 +102,7 @@ const UserLogin = () => {
 
         <div className="flex justify-between">
           <Link to="/signup" className="text-blue-600 hover:underline">Create new account</Link>
-          <Link to="/caption-login" className="text-blue-600 hover:underline">Signin as a caption</Link>
+          <Link to="/captain-login" className="text-blue-600 hover:underline">Signin as a caption</Link>
         </div>
       </form>
     </div>

@@ -13,8 +13,8 @@ function App() {
       <Route path='/' element={<Start />}/>
       <Route path='/login' element={<UserLogin />}/>
       <Route path='/signup' element={<UserSignup />}/>
-      <Route path='/caption-login' element={<CaptionLogin />}/>
-      <Route path='/caption-signup' element={<CaptionSignup />}/>
+      <Route path='/captain-login' element={<CaptionLogin />}/>
+      <Route path='/captain-signup' element={<CaptionSignup />}/>
       <Route path='/home' element={
         <UserProtectedWrapper>
         <Home />
