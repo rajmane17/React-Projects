@@ -1,22 +1,30 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable react/no-unescaped-entities */
 
-import { useState } from 'react'
+import { useState, useContext } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import {CaptainDataContext} from "../context/CaptainContext"
 import axios from 'axios'
 
 const CaptainSignup = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
+  // captain's details
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
+
+  // captain's vehicle details
   const [vehicleColor, setVehicleColor] = useState('')
   const [vehiclePlate, setVehiclePlate] = useState('')
   const [vehicleCapacity, setVehicleCapacity] = useState('')
   const [vehicleType, setVehicleType] = useState('')
+
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+
+  const {captainData, setCaptainData} = useContext(CaptainDataContext)
 
   const submitHandler = async (e) => {
     e.preventDefault();
@@ -39,7 +47,7 @@ const CaptainSignup = () => {
       password,
       vehicle: {
         color: vehicleColor,
-        plate: vehiclePlate,
+        plateNumber: vehiclePlate,
         capacity: vehicleCapacity,
         type: vehicleType
       }
@@ -47,8 +55,12 @@ const CaptainSignup = () => {
 
     try {
       const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/captain/signup`, captainData);
+      console.log(response);
+      
+      localStorage.setItem('captainToken', response.data.captainToken);
 
-      localStorage.setItem('captainToken', response.data.token);
+      setCaptainData(response.data.captain)
+      
       navigate('/captain-dashboard');
     } catch (err) {
       if (err.response) {
@@ -178,7 +190,7 @@ const CaptainSignup = () => {
               onChange={(e) => setVehicleType(e.target.value)}
               disabled={isLoading}
             >
-              <option value="" disabled>Select Vehicle Type</option>
+              <option value="" disabled>Vehicle Type</option>
               <option value="car">Car</option>
               <option value="auto">Auto</option>
               <option value="moto">Moto</option>

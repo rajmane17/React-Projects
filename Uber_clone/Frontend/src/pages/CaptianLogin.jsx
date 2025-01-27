@@ -1,5 +1,7 @@
-import { useState } from "react";
+
+import { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { CaptainDataContext } from "../context/CaptainContext";
 import axios from "axios";
 
 const CaptainLogin = () => {
@@ -8,6 +10,7 @@ const CaptainLogin = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { setCaptainData } = useContext(CaptainDataContext);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,7 +23,10 @@ const CaptainLogin = () => {
         password
       });
 
-      localStorage.setItem('captainToken', response.data.token);
+      localStorage.setItem('captainToken', response.data.captainToken);
+      setCaptainData(response.data.captain);
+      
+
       navigate('/captain-dashboard');
     } catch (err) {
       if (err.response) {
@@ -48,72 +54,64 @@ const CaptainLogin = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-md">
-        <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">Captain Login</h1>
+    <div className='py-5 px-5 min-h-screen flex flex-col justify-between container mx-auto max-w-md'>
+      <div>
+        <img
+          className='w-20 mb-3 mx-auto'
+          src="https://www.svgrepo.com/show/505031/uber-driver.svg"
+          alt="Captain Login"
+        />
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg text-center">
-              {error}
-            </div>
-          )}
-
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-              Email Address
-            </label>
-            <input
-              id="email"
-              required
-              type="email"
-              placeholder="email@example.com"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={isLoading}
-            />
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4 text-center">
+            {error}
           </div>
+        )}
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-              Password
-            </label>
-            <input
-              id="password"
-              required
-              type="password"
-              placeholder="Enter your password"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={isLoading}
-            />
-          </div>
+        <form onSubmit={handleSubmit}>
+          <h3 className='text-lg font-medium mb-2'>Email Address</h3>
+          <input
+            required
+            type="email"
+            placeholder="email@example.com"
+            className='bg-[#eeeeee] mb-7 rounded-lg px-4 py-2 border w-full text-lg placeholder:text-base'
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={isLoading}
+          />
+
+          <h3 className='text-lg font-medium mb-2'>Password</h3>
+          <input
+            required
+            type="password"
+            placeholder="password"
+            className='bg-[#eeeeee] mb-7 rounded-lg px-4 py-2 border w-full text-lg placeholder:text-base'
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={isLoading}
+          />
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out"
+            className='bg-[#111] text-white font-semibold mb-3 rounded-lg px-4 py-2 w-full text-lg'
             disabled={isLoading}
           >
             {isLoading ? 'Logging in...' : 'Login'}
           </button>
 
-          <div className="flex justify-between text-sm mt-4">
-            <Link
-              to="/captain-signup"
-              className="text-blue-600 hover:underline"
-            >
-              Create new account
-            </Link>
-            <Link
-              to="/login"
-              className="text-blue-600 hover:underline"
-            >
-              Signin as user
-            </Link>
-          </div>
+          <p className='text-center'>
+            Don't have an account? <Link to='/captain-signup' className='text-blue-600'>Create here</Link>
+          </p>
+          <p className='text-center mt-2'>
+            <Link to='/login' className='text-blue-600'>Signin as user</Link>
+          </p>
         </form>
+      </div>
+
+      <div className='mt-6'>
+        <p className='text-[10px] text-center leading-tight'>
+          This site is protected by reCAPTCHA and the <span className='underline'>Google Privacy Policy</span> and <span className='underline'>Terms of Service apply</span>.
+        </p>
       </div>
     </div>
   );
